@@ -136,7 +136,6 @@ public class ConfigFileWatcher {
    */
   private class WatcherTask implements Runnable {
 
-    @Override
     public void run() {
       for (Map.Entry<String, ConfigFileInfo> entry : watchedFileMap.entrySet()) {
         String filePath = entry.getKey();

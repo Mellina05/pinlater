@@ -102,7 +102,6 @@ public class StatTrackingEventListener<T> implements FutureEventListener<T> {
     this(startTime, prefix, null, false, null);
   }
 
-  @Override
   public void onSuccess(T t) {
     // Counts can be derived from the metric's count.
     Stats.addMetric(
@@ -116,7 +115,6 @@ public class StatTrackingEventListener<T> implements FutureEventListener<T> {
     }
   }
 
-  @Override
   public void onFailure(Throwable throwable) {
     boolean isExceptionIgnored = ignoreExceptionPredicate.apply(throwable);
     if (logError && !isExceptionIgnored) {
@@ -141,7 +139,7 @@ public class StatTrackingEventListener<T> implements FutureEventListener<T> {
    * The tags string will be attached onto counters/metrics
    * @param newTags a map of tag names and tag values
    */
-  public StatTrackingEventListener appendTags(Map<String, String> newTags) {
+  public StatTrackingEventListener<T> appendTags(Map<String, String> newTags) {
     if (newTags == null || newTags.isEmpty()) {
       return this;
     }
@@ -173,7 +171,7 @@ public class StatTrackingEventListener<T> implements FutureEventListener<T> {
     return tagBuilder.toString();
   }
 
-  public StatTrackingEventListener setIgnoreExceptionPredicate(Predicate<Throwable> predicate) {
+  public StatTrackingEventListener<T> setIgnoreExceptionPredicate(Predicate<Throwable> predicate) {
     if (predicate != null) {
       ignoreExceptionPredicate = predicate;
     } else {

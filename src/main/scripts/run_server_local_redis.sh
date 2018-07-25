@@ -16,7 +16,7 @@
 # limitations under the License.
 
 # CHANGE THIS TO THE ROOT OF THE DIRECTORY CONTAINING EXTRACTED PINLATER JARS.
-export PINLATER_HOME_DIR=/var
+export PINLATER_HOME_DIR=/Users/Meidi.Peng@ibm.com/Documents/pinlater/install
 
 export LOG_PROPERTIES=log4j.local.properties
 export SERVER_CONFIG=pinlater.redis.local.properties

@@ -30,7 +30,6 @@ public class RedisHeartBeater<RC> implements HeartBeater {
     this.redisClientHelper = redisClientHelper;
   }
 
-  @Override
   public boolean ping() throws Exception {
     return redisClientHelper.clientPing(redisClient);
   }

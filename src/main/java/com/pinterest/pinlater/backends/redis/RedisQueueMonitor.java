@@ -91,7 +91,7 @@ public class RedisQueueMonitor extends BackendQueueMonitorBase<RedisPools> {
       RedisUtils.executeWithConnection(
           shard.getValue().getMonitorRedisPool(),
           new Function<Jedis, Void>() {
-            @Override
+        	  
             public Void apply(Jedis conn) {
               Set<String> queueNames = RedisBackendUtils.getQueueNames(conn, shard.getKey());
               for (String queueName : queueNames) {
@@ -121,7 +121,8 @@ public class RedisQueueMonitor extends BackendQueueMonitorBase<RedisPools> {
                       String.valueOf(runStartTimeSeconds));
                   Object nums = conn.eval(
                       RedisLuaScripts.MONITOR_TIMEOUT_UPDATE, keys, argv);
-                  List<Object> tmp = (List<Object>) nums;
+                  @SuppressWarnings("unchecked")
+				List<Object> tmp = (List<Object>) nums;
                   numTimeoutDone += Integer.valueOf((String) tmp.get(0));
                   numTimeoutRetry += Integer.valueOf((String) tmp.get(1));
                   numTimeoutEvict += Integer.valueOf((String) tmp.get(2));
@@ -142,12 +143,12 @@ public class RedisQueueMonitor extends BackendQueueMonitorBase<RedisPools> {
 
                   logCount++;
                   if (logCount % getLogInterval() == 0) {
-                    LOG.info(String.format(
-                        "JobQueueMonitor: "
-                            + "Shard: %s Queue: %s Priority: %d Timeout Done: %d Timeout Retry: %d "
-                            + "Succeeded GC: %d Failed GC: %d",
-                        shard.getKey(), queueName, priority, numTimeoutDone, numTimeoutRetry,
-                        numSucceededGC, numFailedGC));
+//                    LOG.info(String.format(
+//                        "JobQueueMonitor: "
+//                            + "Shard: %s Queue: %s Priority: %d Timeout Done: %d Timeout Retry: %d "
+//                            + "Succeeded GC: %d Failed GC: %d",
+//                        shard.getKey(), queueName, priority, numTimeoutDone, numTimeoutRetry,
+//                        numSucceededGC, numFailedGC));
                     if (numTimeoutEvict != 0) {
                       LOG.error(String.format(
                           "JobQueueMonitor: Shard: %s Queue: %s Priority: %d Timeout Evict: %d",

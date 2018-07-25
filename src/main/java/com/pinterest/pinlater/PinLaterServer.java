@@ -94,6 +94,7 @@ public class PinLaterServer {
       LOG.info("\n#######################################"
           + "\n#      Ready To Serve Requests.       #"
           + "\n#######################################");
+      LOG.info("serverHostName: " + serverHostName);
     } catch (Exception e) {
       LOG.error("Failed to start the pinlater server", e);
       System.exit(1);

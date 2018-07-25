@@ -1,24 +1,8 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package com.pinterest.pinlater.example;
-
+package com.pinterest.pinlater.worker;
 import com.pinterest.pinlater.client.PinLaterClient;
 import com.pinterest.pinlater.commons.config.ConfigFileServerSet;
 import com.pinterest.pinlater.commons.util.BytesUtil;
+import com.pinterest.pinlater.job.FailedJob;
 import com.pinterest.pinlater.thrift.PinLaterDequeueMetadata;
 import com.pinterest.pinlater.thrift.PinLaterDequeueRequest;
 import com.pinterest.pinlater.thrift.PinLaterDequeueResponse;
@@ -57,17 +41,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  * File-based serverset is used for service discovery. It uses a local file that stores the
  * servers' [HOST_IP]:[PORT] pairs instead of talking to Zookeeper directly.
  */
-public class PinLaterExampleWorker {
+public class WorkerForFailedJob {
 
   private static final int DEQUEUE_BATCH_SIZE = 10;
   private static final int NUM_WORKER_THREADS = 10;
   private static final int DEQUEUE_INTEVAL_MS = 1000;
-  private static final int DEQUEUE_INTEVAL_S = 5;
   private static final int ACK_INTEVAL_MS = 1000;
   private static final int PENDING_JOB_LIMIT = 50;
 
-  private static final Logger LOG = LoggerFactory.getLogger(PinLaterExampleWorker.class);
+  private static final Logger LOG = LoggerFactory.getLogger(WorkerForFailedJob.class);
   private static final RequestContext REQUEST_CONTEXT;
+  private static String QUEUE_NAME;
   static {
     try {
       REQUEST_CONTEXT = new RequestContext(
@@ -91,21 +75,22 @@ public class PinLaterExampleWorker {
 
   private PinLaterClient client;
 
-  public PinLaterExampleWorker() {
+  public WorkerForFailedJob() {
     String fullServerSetPath =
         getClass().getResource("/" + System.getProperty("serverset_path")).getPath();
+		QUEUE_NAME = System.getProperty("queue");
     ServerSet serverSet = new ConfigFileServerSet(fullServerSetPath);
     this.client = new PinLaterClient(serverSet, 10);
 
     ScheduledExecutorService dequeueAckExecutor = Executors.newScheduledThreadPool(2);
     dequeueAckExecutor.scheduleWithFixedDelay(
-        new DequeueThread(), 0, DEQUEUE_INTEVAL_S, TimeUnit.SECONDS);
+        new DequeueThread(), 0, DEQUEUE_INTEVAL_MS, TimeUnit.MILLISECONDS);
     dequeueAckExecutor.scheduleWithFixedDelay(
         new AckThread(), 0, ACK_INTEVAL_MS, TimeUnit.MILLISECONDS);
   }
 
   public static void main(String[] args) {
-    new PinLaterExampleWorker();
+    new WorkerForFailedJob();
   }
 
   private PinLaterJobAckRequest buildAckRequest() {
@@ -114,10 +99,10 @@ public class PinLaterExampleWorker {
     succeededJobQueue.drainTo(succeededJobs);
     failedJobQueue.drainTo(failedJobs);
     if (succeededJobs.size() > 0 || failedJobs.size() > 0) {
-      LOG.info("ACK {}: {} succeeded, {} failed", PinLaterExampleJob.QUEUE_NAME,
+      LOG.info("ACK {}: {} succeeded, {} failed", QUEUE_NAME,
           succeededJobs.size(), failedJobs.size());
       PinLaterJobAckRequest ackRequest =
-          new PinLaterJobAckRequest(PinLaterExampleJob.QUEUE_NAME);
+          new PinLaterJobAckRequest(QUEUE_NAME);
       ackRequest.setJobsSucceeded(succeededJobs);
       ackRequest.setJobsFailed(failedJobs);
       return ackRequest;
@@ -127,15 +112,14 @@ public class PinLaterExampleWorker {
   }
 
   class DequeueThread implements Runnable {
-
     public void run() {
-    	  LOG.info("Start DEQUEUE");
+    	  LOG.info("Pending jobs: " + numPendingJobs.get());
       if (numPendingJobs.get() > PENDING_JOB_LIMIT) {
         return;
       }
 
       PinLaterDequeueRequest dequeueRequest =
-          new PinLaterDequeueRequest(PinLaterExampleJob.QUEUE_NAME, DEQUEUE_BATCH_SIZE);
+          new PinLaterDequeueRequest(QUEUE_NAME, DEQUEUE_BATCH_SIZE);
 
       // Ack completed jobs along with dequeue request
       PinLaterJobAckRequest ackRequest = buildAckRequest();
@@ -147,16 +131,17 @@ public class PinLaterExampleWorker {
           new Function<PinLaterDequeueResponse, BoxedUnit>() {
             public BoxedUnit apply(final PinLaterDequeueResponse response) {
               LOG.info("DEQUEUE {}: {} jobs, {} jobs pending",
-                  PinLaterExampleJob.QUEUE_NAME, response.getJobsSize(), numPendingJobs.get());
+                  QUEUE_NAME, response.getJobsSize(), numPendingJobs.get());
               for (final Map.Entry<String, ByteBuffer> job : response.getJobs().entrySet()) {
                 numPendingJobs.incrementAndGet();
                 workerExecutor.submit(new Runnable() {
                   public void run() {
                     try {
-                      PinLaterExampleJob.process(
+                      FailedJob.process(
                           new String(BytesUtil.readBytesFromByteBuffer(job.getValue())));
                       succeededJobQueue.add(new PinLaterJobAckInfo(job.getKey()));
                     } catch (Exception e) {
+                    	 LOG.info("Exception thrown while executing job: " + e.getMessage());
                       PinLaterJobAckInfo ackInfo = new PinLaterJobAckInfo(job.getKey());
 
                       // Append exception message to the custom status
@@ -168,7 +153,7 @@ public class PinLaterExampleWorker {
                       int attemptsAllowed = metaData.getAttemptsAllowed();
                       int attemptsRemained = metaData.getAttemptsRemaining();
                       ackInfo.setRetryDelayMillis(1000 * (attemptsAllowed - attemptsRemained));
-
+                   
                       failedJobQueue.add(ackInfo);
                     } finally {
                       numPendingJobs.decrementAndGet();
@@ -184,12 +169,11 @@ public class PinLaterExampleWorker {
   }
 
   class AckThread implements Runnable {
-
     public void run() {
       PinLaterJobAckRequest ackRequest = buildAckRequest();
       if (ackRequest != null) {
     	    LOG.info("ackRequest: " + ackRequest);
-    	    LOG.info("REQUEST_CONTEXT.getSource: " + REQUEST_CONTEXT.getSource());
+  	    LOG.info("REQUEST_CONTEXT.getSource: " + REQUEST_CONTEXT.getSource());
         client.getIface().ackDequeuedJobs(REQUEST_CONTEXT, ackRequest);
       }
     }

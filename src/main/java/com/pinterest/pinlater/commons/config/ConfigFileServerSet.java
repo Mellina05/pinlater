@@ -27,7 +27,6 @@ import com.twitter.thrift.Endpoint;
 import com.twitter.thrift.ServiceInstance;
 import com.twitter.thrift.Status;
 import com.twitter.util.ExceptionalFunction;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,34 +88,29 @@ public class ConfigFileServerSet implements ServerSet {
     }
   }
 
-  @Override
   public EndpointStatus join(
       InetSocketAddress endpoint, Map<String, InetSocketAddress> additionalEndpoints, Status status)
       throws Group.JoinException, InterruptedException {
     throw new UnsupportedOperationException("ConfigFileServerSet does not support join()");
   }
 
-  @Override
   public EndpointStatus join(
       InetSocketAddress endpoint, Map<String, InetSocketAddress> additionalEndpoints)
       throws Group.JoinException, InterruptedException {
     throw new UnsupportedOperationException("ConfigFileServerSet does not support join()");
   }
 
-  @Override
   public EndpointStatus join(
       InetSocketAddress endpoint, Map<String, InetSocketAddress> additionalEndpoints, int shardId)
       throws Group.JoinException, InterruptedException {
     throw new UnsupportedOperationException("ConfigFileServerSet does not support join()");
   }
 
-  @Override
   public Command watch(final HostChangeMonitor<ServiceInstance> monitor) throws MonitorException {
     monitor(monitor);
     return null;
   }
 
-  @Override
   public void monitor(final HostChangeMonitor<ServiceInstance> monitor) throws MonitorException {
     Preconditions.checkNotNull(monitor);
     try {

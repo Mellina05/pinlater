@@ -7,7 +7,7 @@
  *
  */
 
-package com.pinterest.pinlater.example;
+package com.pinterest.pinlater.job;
 
 import com.pinterest.pinlater.thrift.PinLaterJob;
 import org.slf4j.Logger;

@@ -24,7 +24,6 @@ public class DummyHeartBeater implements HeartBeater {
     this.heartBeatResult = heartBeatResult;
   }
 
-  @Override
   public boolean ping() {
     return heartBeatResult;
   }

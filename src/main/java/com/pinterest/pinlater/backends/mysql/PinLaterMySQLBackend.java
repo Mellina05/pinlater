@@ -294,7 +294,7 @@ public class PinLaterMySQLBackend extends PinLaterBackendBase {
           conn,
           String.format(mySQLQuery, jobsTableName),
           new RowProcessor<PinLaterJobInfo>() {
-            @Override
+
             public PinLaterJobInfo process(ResultSet rs) throws IOException, SQLException {
               PinLaterJobInfo ji = new PinLaterJobInfo();
               ji.setJobDescriptor(
@@ -406,7 +406,7 @@ public class PinLaterMySQLBackend extends PinLaterBackendBase {
                     MySQLBackendUtils.constructJobsTableName(queueName, shardName, priority),
                     getBodyRegexClause(bodyRegexTomatch)),
                 new RowProcessor<PinLaterJobInfo>() {
-                  @Override
+
                   public PinLaterJobInfo process(ResultSet rs) throws IOException, SQLException {
                     PinLaterJobInfo ji = new PinLaterJobInfo();
                     ji.setJobDescriptor(
@@ -804,7 +804,7 @@ public class PinLaterMySQLBackend extends PinLaterBackendBase {
       final String shardName,
       final int priority) {
     return new RowProcessor<Tuple6<String, Integer, Integer, Timestamp, Timestamp, ByteBuffer>>() {
-      @Override
+
       public Tuple6<String, Integer, Integer, Timestamp, Timestamp, ByteBuffer> process(
           ResultSet rs) throws IOException, SQLException {
         return new Tuple6<String, Integer, Integer, Timestamp, Timestamp, ByteBuffer>(

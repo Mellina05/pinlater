@@ -84,7 +84,7 @@ struct PinLaterJob {
   1: required binary body;
   2: optional byte priority = 1;
   3: optional i64 runAfterTimestampMillis;
-  4: optional i32 numAttemptsAllowed = 2;
+  4: optional i32 numAttemptsAllowed = 5;
   5: optional string customStatus = "";
 }
 

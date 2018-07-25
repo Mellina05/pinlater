@@ -7,7 +7,7 @@
  *
  */
 
-package com.pinterest.pinlater.example;
+package com.pinterest.pinlater.job;
 
 import com.pinterest.pinlater.thrift.PinLaterJob;
 import org.slf4j.Logger;
@@ -18,14 +18,14 @@ import java.nio.ByteBuffer;
 /**
  * An example PinLater job
  */
-public class PinLaterExampleJob {
+public class PrintJob {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PinLaterExampleJob.class);
-  public static final String QUEUE_NAME = "test_queue";
+  private static final Logger LOG = LoggerFactory.getLogger(PrintJob.class);
+  public static final String QUEUE_NAME = "print_queue";
 
   private String logData;
 
-  public PinLaterExampleJob(String logData) {
+  public PrintJob(String logData) {
     this.logData = logData;
   }
 
@@ -39,7 +39,8 @@ public class PinLaterExampleJob {
   }
 
   public static void process(String logData) throws Exception{
-	System.out.print("Hello world.");
-    LOG.info("PinLaterExampleJob: {}", logData);
+	for(int i = 0; i < 10; i++) {
+		LOG.info("PrintJob: {}", "Hello world. " + logData);
+	}
   }
 }

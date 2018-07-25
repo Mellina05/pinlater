@@ -82,7 +82,6 @@ public class PinLaterQueueConfig {
       String fullServerSetPath = getClass().getResource("/" + pinlaterServerSetPath).getPath();
       ServerSet serverSet = new ConfigFileServerSet(fullServerSetPath);
       serverSet.monitor(new DynamicHostSet.HostChangeMonitor<ServiceInstance>() {
-        @Override
         public void onChange(ImmutableSet<ServiceInstance> hostSet) {
           int oldSize = numPinLaterServers.get();
           int newSize = hostSet.size();

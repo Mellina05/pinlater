@@ -100,7 +100,6 @@ public abstract class BackendQueueMonitorBase<T> implements Runnable {
     this.numPriorityLevels = numPriorityLevels;
   }
 
-  @Override
   public void run() {
     final long runStartMillis = System.currentTimeMillis();
     for (ImmutableMap.Entry<String, T> shard : shardMap.entrySet()) {

@@ -184,7 +184,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
       RedisUtils.executeWithConnection(
           shard.getValue().getGeneralRedisPool(),
           new Function<Jedis, Void>() {
-            @Override
+
             public Void apply(Jedis conn) {
               if (conn.zscore(queueNamesRedisKey, queueName) == null) {
                 conn.zadd(queueNamesRedisKey, currentTimeSeconds, queueName);
@@ -204,7 +204,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
       RedisUtils.executeWithConnection(
           shard.getValue().getGeneralRedisPool(),
           new Function<Jedis, Void>() {
-            @Override
+
             public Void apply(Jedis conn) {
               // We will delete the queue from the queueNames sorted set, and delete all the jobs
               // in the pending and in_progress queues
@@ -245,7 +245,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
     return RedisUtils.executeWithConnection(
         shardMap.get(shardName).getGeneralRedisPool(),
         new Function<Jedis, PinLaterJobInfo>() {
-          @Override
+        	
           public PinLaterJobInfo apply(Jedis conn) {
             // Find out which state the job is in by querying each state.
             PinLaterJobState jobState = null;
@@ -332,7 +332,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
     return RedisUtils.executeWithConnection(
         shardMap.get(shardName).getGeneralRedisPool(),
         new Function<Jedis, Integer>() {
-          @Override
+
           public Integer apply(Jedis conn) {
             int totalCount = 0;
             for (int priority : priorities) {
@@ -387,7 +387,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
       return RedisUtils.executeWithConnection(
           shard.getValue().getGeneralRedisPool(),
           new Function<Jedis, String>() {
-            @Override
+
             public String apply(Jedis conn) {
               String jobIdRedisKey = RedisBackendUtils.constructJobIdRedisKey(
                   queueName, shard.getKey());
@@ -411,6 +411,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
                   RedisBackendUtils.truncateCustomStatus(job.getCustomStatus())
               );
               Long jobId = (Long) conn.eval(RedisLuaScripts.ENQUEUE_JOB, keys, argv);
+              LOG.info(String.format("[QUEUE_NAME]:[SHARD]:[PRIORITY]:[JOB_ID] = %s:s%s:p%s:%s", queueName, shard.getKey(), job.getPriority(), jobId));
               return new PinLaterJobDescriptor(
                   queueName, shard.getKey(), job.getPriority(), jobId).toString();
             }
@@ -448,7 +449,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
       return RedisUtils.executeWithConnection(
           shardMap.get(shardName).getGeneralRedisPool(),
           new Function<Jedis, PinLaterDequeueResponse>() {
-            @Override
+
             public PinLaterDequeueResponse apply(Jedis conn) {
               PinLaterDequeueResponse shardResponse = new PinLaterDequeueResponse();
               final long currentTimeMillis = System.currentTimeMillis();
@@ -552,7 +553,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
       RedisUtils.executeWithConnection(
           shardMap.get(jobDesc.getShardName()).getGeneralRedisPool(),
           new Function<Jedis, Void>() {
-            @Override
+
             public Void apply(Jedis conn) {
               String pendingQueueRedisKey = RedisBackendUtils.constructQueueRedisKey(
                   queueName, jobDesc.getShardName(), jobDesc.getPriority(),
@@ -626,7 +627,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
       RedisUtils.executeWithConnection(
           shardMap.get(jobDesc.getShardName()).getGeneralRedisPool(),
           new Function<Jedis, Void>() {
-            @Override
+
             public Void apply(Jedis conn) {
               String pendingQueueRedisKey = RedisBackendUtils.constructQueueRedisKey(queueName,
                   jobDesc.getShardName(), jobDesc.getPriority(), PinLaterJobState.PENDING);
@@ -730,7 +731,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
     return RedisUtils.executeWithConnection(
         shardMap.get(shardName).getGeneralRedisPool(),
         new Function<Jedis, List<PinLaterJobInfo>>() {
-          @Override
+
           public List<PinLaterJobInfo> apply(Jedis conn) {
             List<List<PinLaterJobInfo>> jobsPerPriority =
                 Lists.newArrayListWithCapacity(priorities.size());
@@ -849,7 +850,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
     return RedisUtils.executeWithConnection(
         shardMap.get(shardName).getGeneralRedisPool(),
         new Function<Jedis, Integer>() {
-          @Override
+
           public Integer apply(Jedis conn) {
             String failedQueueRedisKey = RedisBackendUtils.constructQueueRedisKey(
                 queueName, shardName, priority, PinLaterJobState.FAILED);
@@ -885,7 +886,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
     return RedisUtils.executeWithConnection(
         shardMap.get(shardName).getGeneralRedisPool(),
         new Function<Jedis, Integer>() {
-          @Override
+
           public Integer apply(Jedis conn) {
             Object result;
             String queueRedisKey = RedisBackendUtils.constructQueueRedisKey(
@@ -917,7 +918,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
           RedisUtils.executeWithConnection(
               shard.getValue().getGeneralRedisPool(),
               new Function<Jedis, Void>() {
-                @Override
+
                 public Void apply(Jedis conn) {
                   conn.flushAll();
                   return null;
@@ -967,7 +968,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
     Map<String, RedisPools> filteredShardMap;
     if (healthyOnly) {
       filteredShardMap = Maps.filterValues(shardMap, new Predicate<RedisPools>() {
-        @Override
+
         public boolean apply(@Nullable RedisPools redisPools) {
           return healthChecker.isServerLive(redisPools.getHost(), redisPools.getPort());
         }
@@ -995,7 +996,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
       Set<String> newQueueNames = RedisUtils.executeWithConnection(
           randomShard.getValue().getGeneralRedisPool(),
           new Function<Jedis, Set<String>>() {
-            @Override
+
             public Set<String> apply(Jedis conn) {
               return RedisBackendUtils.getQueueNames(conn, randomShard.getKey());
             }
@@ -1018,7 +1019,7 @@ public class PinLaterRedisBackend extends PinLaterBackendBase {
         RedisUtils.executeWithConnection(
             shardMap.get(jobDesc.getShardName()).getGeneralRedisPool(),
             new Function<Jedis, Void>() {
-              @Override
+
               public Void apply(Jedis conn) {
                 String hashRedisKey = RedisBackendUtils.constructHashRedisKey(
                     jobDesc.getQueueName(), jobDesc.getShardName(), jobDesc.getLocalId());

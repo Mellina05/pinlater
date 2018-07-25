@@ -64,7 +64,6 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
     this.queueConfig = Preconditions.checkNotNull(queueConfig);
   }
 
-  @Override
   public Future<Void> createQueue(RequestContext context, final String name) {
     if (!validateQueueName(name)) {
       return Future.exception(new PinLaterException(
@@ -76,7 +75,6 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
             context, "createQueue", name)));
   }
 
-  @Override
   public Future<Void> deleteQueue(
       RequestContext context, final String name, final String password) {
     return Stats.timeFutureMillis(
@@ -85,14 +83,12 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
             context, "deleteQueue", name)));
   }
 
-  @Override
   public Future<PinLaterEnqueueResponse> enqueueJobs(
       RequestContext context, final PinLaterEnqueueRequest request) {
     return Stats.timeFutureMillis(
         "PinLaterService.enqueueJobs",
         backend.enqueueJobs(request).onSuccess(
             new Function<PinLaterEnqueueResponse, BoxedUnit>() {
-              @Override
               public BoxedUnit apply(PinLaterEnqueueResponse response) {
                 Stats.incr(request.getQueueName() + "_enqueue", request.getJobsSize());
                 return null;
@@ -101,7 +97,6 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
             context, "enqueueJobs", request.toString())));
   }
 
-  @Override
   public Future<PinLaterDequeueResponse> dequeueJobs(
       RequestContext context, final PinLaterDequeueRequest request) {
     if (!queueConfig.allowDequeue(request.getQueueName(), request.getLimit())) {
@@ -114,7 +109,6 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
         "PinLaterService.dequeueJobs",
         backend.dequeueJobs(context.getSource(), request).onSuccess(
             new Function<PinLaterDequeueResponse, BoxedUnit>() {
-              @Override
               public BoxedUnit apply(PinLaterDequeueResponse response) {
                 Stats.incr(request.getQueueName() + "_dequeue", response.getJobsSize());
                 return null;
@@ -123,13 +117,11 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
             context, "dequeueJobs", request.toString())));
   }
 
-  @Override
   public Future<Void> ackDequeuedJobs(RequestContext context, final PinLaterJobAckRequest request) {
     return Stats.timeFutureMillis(
         "PinLaterService.ackDequeuedJobs",
         backend.ackDequeuedJobs(request).onSuccess(
             new Function<Void, BoxedUnit>() {
-              @Override
               public BoxedUnit apply(Void aVoid) {
                 Stats.incr(request.getQueueName() + "_ack_succeeded",
                     request.getJobsSucceededSize());
@@ -140,14 +132,12 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
             request.toString())));
   }
 
-  @Override
   public Future<Void> checkpointJobs(RequestContext context,
                                      final PinLaterCheckpointJobsRequest request) {
     return Stats.timeFutureMillis(
         "PinLaterService.checkpointJobs",
         backend.checkpointJobs(context.getSource(), request).onSuccess(
             new Function<Void, BoxedUnit>() {
-              @Override
               public BoxedUnit apply(Void aVoid) {
                 Stats.incr(request.getQueueName() + "_checkpoint", request.getRequestsSize());
                 return null;
@@ -156,7 +146,6 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
             context, "checkpointJobs", request.toString())));
   }
 
-  @Override
   public Future<Map<String, PinLaterJobInfo>> lookupJobs(RequestContext context,
                                                          PinLaterLookupJobRequest request) {
     return Stats.timeFutureMillis(
@@ -166,7 +155,6 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
                 context, "lookupJobs", request.toString())));
   }
 
-  @Override
   public Future<Integer> getJobCount(RequestContext context, PinLaterGetJobCountRequest request) {
     return Stats.timeFutureMillis(
         "PinLaterService.getJobCount",
@@ -174,7 +162,6 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
             new LogAndWrapException<Integer>(context, "getJobCount", request.toString())));
   }
 
-  @Override
   public Future<Set<String>> getQueueNames(RequestContext context) {
     return Stats.timeFutureMillis(
         "PinLaterService.getQueueNames",
@@ -182,7 +169,6 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
             new LogAndWrapException<Set<String>>(context, "getQueueNames", "")));
   }
 
-  @Override
   public Future<PinLaterScanJobsResponse> scanJobs(RequestContext context,
                                                    PinLaterScanJobsRequest request) {
     return Stats.timeFutureMillis(
@@ -192,7 +178,6 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
                 context, "scanJobs", request.toString())));
   }
 
-  @Override
   public Future<Integer> retryFailedJobs(RequestContext context,
                                          PinLaterRetryFailedJobsRequest request) {
     return Stats.timeFutureMillis(
@@ -202,7 +187,6 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
                 context, "retryFailedJobs", request.toString())));
   }
 
-  @Override
   public Future<Integer> deleteJobs(RequestContext context, PinLaterDeleteJobsRequest request) {
     return Stats.timeFutureMillis(
         "PinLaterService.deleteJobs",
@@ -228,7 +212,6 @@ public class PinLaterServiceImpl implements PinLater.ServiceIface {
       LOG.debug("Context: {} Method: {} Request: {}", context, methodName, requestDesc);
     }
 
-    @Override
     public Future<Response> apply(Throwable throwable) {
       LOG.error("Context: {} Method: {} Request: {} Exception:",
           context, methodName, requestDesc, throwable);

@@ -367,7 +367,7 @@ public abstract class PinLaterBackendBase implements PinLaterBackendIface {
 
     return Future.collect(futures).map(
         new Function<List<Integer>, Integer>() {
-          @Override
+
           public Integer apply(List<Integer> shardCounts) {
             int totalCount = 0;
             for (Integer shardCount : shardCounts) {
@@ -386,7 +386,6 @@ public abstract class PinLaterBackendBase implements PinLaterBackendIface {
         request.getJobs(),
         queryParallelism,
         new Function<List<PinLaterJob>, Future<PinLaterEnqueueResponse>>() {
-          @Override
           public Future<PinLaterEnqueueResponse> apply(final List<PinLaterJob> jobs) {
             return futurePool.apply(new ExceptionalFunction0<PinLaterEnqueueResponse>() {
               @Override
@@ -413,7 +412,7 @@ public abstract class PinLaterBackendBase implements PinLaterBackendIface {
 
     return Future.collect(futures).map(
         new Function<List<PinLaterEnqueueResponse>, PinLaterEnqueueResponse>() {
-          @Override
+
           public PinLaterEnqueueResponse apply(List<PinLaterEnqueueResponse> subResponses) {
             PinLaterEnqueueResponse response =
                 new PinLaterEnqueueResponse(Lists.<String>newArrayList());
@@ -431,7 +430,6 @@ public abstract class PinLaterBackendBase implements PinLaterBackendIface {
     try {
       dequeueFuture = dequeueSemaphoreMap.get(request.getQueueName()).acquire().flatMap(
           new Function<Permit, Future<PinLaterDequeueResponse>>() {
-            @Override
             public Future<PinLaterDequeueResponse> apply(final Permit permit) {
               return futurePool.apply(new ExceptionalFunction0<PinLaterDequeueResponse>() {
                 @Override
@@ -439,7 +437,6 @@ public abstract class PinLaterBackendBase implements PinLaterBackendIface {
                   return dequeueJobsImpl(source, request, numAutoRetries);
                 }
               }).respond(new Function<Try<PinLaterDequeueResponse>, BoxedUnit>() {
-                @Override
                 public BoxedUnit apply(Try<PinLaterDequeueResponse> responseTry) {
                   permit.release();
                   return BoxedUnit.UNIT;
@@ -459,7 +456,6 @@ public abstract class PinLaterBackendBase implements PinLaterBackendIface {
 
     return dequeueFuture.join(ackFuture).map(
         new Function<Tuple2<PinLaterDequeueResponse, Void>, PinLaterDequeueResponse>() {
-          @Override
           public PinLaterDequeueResponse apply(Tuple2<PinLaterDequeueResponse, Void> tuple) {
             return tuple._1();
           }
@@ -489,7 +485,6 @@ public abstract class PinLaterBackendBase implements PinLaterBackendIface {
 
     return Future.collect(lookupJobFutures).map(
         new Function<List<Pair<String, PinLaterJobInfo>>, Map<String, PinLaterJobInfo>>() {
-          @Override
           public Map<String, PinLaterJobInfo> apply(List<Pair<String, PinLaterJobInfo>> jobPairs) {
             Map<String, PinLaterJobInfo> lookupJobMap = Maps.newHashMap();
             for (Pair<String, PinLaterJobInfo> jobPair : jobPairs) {
@@ -516,7 +511,6 @@ public abstract class PinLaterBackendBase implements PinLaterBackendIface {
           request.getRequests(),
           queryParallelism,
           new Function<List<PinLaterCheckpointJobRequest>, Future<Void>>() {
-            @Override
             public Future<Void> apply(final List<PinLaterCheckpointJobRequest> checkpointRequests) {
               return futurePool.apply(new ExceptionalFunction0<Void>() {
                 @Override
@@ -581,7 +575,6 @@ public abstract class PinLaterBackendBase implements PinLaterBackendIface {
     // Perform a merge, and then truncate at the requested limit.
     return Future.collect(futures).map(
         new Function<List<List<PinLaterJobInfo>>, PinLaterScanJobsResponse>() {
-          @Override
           public PinLaterScanJobsResponse apply(List<List<PinLaterJobInfo>> shardLists) {
             // First grab all of the lists of job info and perform a merge on them.
             List<PinLaterJobInfo> mergedList = PinLaterBackendUtils.mergeIntoList(
@@ -703,7 +696,6 @@ public abstract class PinLaterBackendBase implements PinLaterBackendIface {
           request.getJobsSucceeded(),
           queryParallelism,
           new Function<List<PinLaterJobAckInfo>, Future<Void>>() {
-            @Override
             public Future<Void> apply(final List<PinLaterJobAckInfo> jobAckInfos) {
               return futurePool.apply(new ExceptionalFunction0<Void>() {
                 @Override
@@ -724,7 +716,6 @@ public abstract class PinLaterBackendBase implements PinLaterBackendIface {
           request.getJobsFailed(),
           queryParallelism,
           new Function<List<PinLaterJobAckInfo>, Future<Void>>() {
-            @Override
             public Future<Void> apply(final List<PinLaterJobAckInfo> jobAckInfos) {
               return futurePool.apply(new ExceptionalFunction0<Void>() {
                 @Override

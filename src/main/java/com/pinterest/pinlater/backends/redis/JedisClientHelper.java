@@ -58,7 +58,7 @@ public class JedisClientHelper implements RedisClientHelper<JedisPool> {
       result = RedisUtils.executeWithConnection(
           jedisPool,
           new Function<Jedis, String>() {
-            @Override
+
             public String apply(Jedis conn) {
               return conn.ping();
             }

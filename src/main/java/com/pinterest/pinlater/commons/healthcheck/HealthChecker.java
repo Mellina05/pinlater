@@ -252,7 +252,6 @@ public class HealthChecker {
       this.serverName = serverName;
     }
 
-    @Override
     public void run() {
       checkServer(serverName);
     }

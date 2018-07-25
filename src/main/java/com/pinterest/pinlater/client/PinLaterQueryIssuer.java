@@ -184,7 +184,6 @@ public class PinLaterQueryIssuer {
       permits.acquire();
       iface.enqueueJobs(REQUEST_CONTEXT, request).respond(
           new Function<Try<PinLaterEnqueueResponse>, BoxedUnit>() {
-            @Override
             public BoxedUnit apply(Try<PinLaterEnqueueResponse> responseTry) {
               permits.release();
               statsLogger.requestComplete(
@@ -214,12 +213,11 @@ public class PinLaterQueryIssuer {
       permits.acquire();
       iface.dequeueJobs(REQUEST_CONTEXT, request).flatMap(
           new Function<PinLaterDequeueResponse, Future<Void>>() {
-            @Override
             public Future<Void> apply(PinLaterDequeueResponse response) {
               if (response.getJobsSize() == 0) {
                 return Future.Void();
               }
-
+              
               PinLaterJobAckRequest jobAckRequest = new PinLaterJobAckRequest(queueName);
               for (String job : response.getJobs().keySet()) {
                 if (random.nextInt(100) < dequeueSuccessPercent) {
@@ -231,7 +229,7 @@ public class PinLaterQueryIssuer {
               return iface.ackDequeuedJobs(REQUEST_CONTEXT, jobAckRequest);
             }
           }).respond(new Function<Try<Void>, BoxedUnit>() {
-        @Override
+
         public BoxedUnit apply(Try<Void> voidTry) {
           permits.release();
           statsLogger.requestComplete(

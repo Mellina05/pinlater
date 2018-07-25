@@ -40,12 +40,12 @@ public final class QueueRateLimiter {
 
     final RateLimiter rateLimiter = RateLimiter.create(maxRequestsPerSecond);
     return new IFace() {
-      @Override
+
       public boolean allowDequeue(int numJobs) {
         return rateLimiter.tryAcquire(numJobs);
       }
 
-      @Override
+
       public double getRate() {
         return rateLimiter.getRate();
       }
@@ -53,12 +53,12 @@ public final class QueueRateLimiter {
   }
 
   private static final IFace ALLOW_NONE = new IFace() {
-    @Override
+
     public boolean allowDequeue(int numJobs) {
       return false;
     }
 
-    @Override
+
     public double getRate() {
       return 0.0;
     }
