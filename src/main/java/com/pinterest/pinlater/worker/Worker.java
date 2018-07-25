@@ -3,6 +3,7 @@ package com.pinterest.pinlater.worker;
 import com.pinterest.pinlater.client.PinLaterClient;
 import com.pinterest.pinlater.commons.config.ConfigFileServerSet;
 import com.pinterest.pinlater.commons.util.BytesUtil;
+import com.pinterest.pinlater.commons.util.SystemInfoUtil;
 import com.pinterest.pinlater.job.PrintJob;
 import com.pinterest.pinlater.thrift.PinLaterDequeueMetadata;
 import com.pinterest.pinlater.thrift.PinLaterDequeueRequest;
@@ -80,7 +81,7 @@ public class Worker {
   public Worker() {
     String fullServerSetPath =
         getClass().getResource("/" + System.getProperty("serverset_path")).getPath();
-		QUEUE_NAME = System.getProperty("queue");
+	QUEUE_NAME = System.getProperty("queue");
     ServerSet serverSet = new ConfigFileServerSet(fullServerSetPath);
     this.client = new PinLaterClient(serverSet, 10);
 
@@ -128,7 +129,6 @@ public class Worker {
       if (ackRequest != null) {
         dequeueRequest.setJobAckRequest(ackRequest);
       }
-
       client.getIface().dequeueJobs(REQUEST_CONTEXT, dequeueRequest).onSuccess(
           new Function<PinLaterDequeueResponse, BoxedUnit>() {
             public BoxedUnit apply(final PinLaterDequeueResponse response) {
@@ -139,6 +139,7 @@ public class Worker {
                 workerExecutor.submit(new Runnable() {
                   public void run() {
                     try {
+                    	 LOG.info("Worker PID: " + SystemInfoUtil.getPID());
                       PrintJob.process(
                           new String(BytesUtil.readBytesFromByteBuffer(job.getValue())));
                       succeededJobQueue.add(new PinLaterJobAckInfo(job.getKey()));

@@ -9,6 +9,7 @@
 
 package com.pinterest.pinlater.job;
 
+import com.pinterest.pinlater.commons.util.SystemInfoUtil;
 import com.pinterest.pinlater.thrift.PinLaterJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,5 +43,6 @@ public class PrintJob {
 	for(int i = 0; i < 10; i++) {
 		LOG.info("PrintJob: {}", "Hello world. " + logData);
 	}
+	SystemInfoUtil.printUsage();
   }
 }
