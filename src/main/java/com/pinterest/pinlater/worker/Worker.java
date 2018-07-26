@@ -1,5 +1,6 @@
 package com.pinterest.pinlater.worker;
 
+import com.google.common.base.Preconditions;
 import com.pinterest.pinlater.client.PinLaterClient;
 import com.pinterest.pinlater.commons.config.ConfigFileServerSet;
 import com.pinterest.pinlater.commons.util.BytesUtil;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.runtime.BoxedUnit;
 
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -55,6 +57,8 @@ public class Worker {
   private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
   private static final RequestContext REQUEST_CONTEXT;
   private static String QUEUE_NAME;
+  private static final String JOB_PACKAGE_PREFIX = "com.pinterest.pinlater.job.";
+  private static String JOB_NAME;
   static {
     try {
       REQUEST_CONTEXT = new RequestContext(
@@ -82,6 +86,9 @@ public class Worker {
     String fullServerSetPath =
         getClass().getResource("/" + System.getProperty("serverset_path")).getPath();
 	QUEUE_NAME = System.getProperty("queue");
+	JOB_NAME = System.getProperty("job");
+	Preconditions.checkNotNull(QUEUE_NAME, "Queue was not specified.");
+	Preconditions.checkNotNull(JOB_NAME, "Job was not specified.");
     ServerSet serverSet = new ConfigFileServerSet(fullServerSetPath);
     this.client = new PinLaterClient(serverSet, 10);
 
@@ -140,8 +147,16 @@ public class Worker {
                   public void run() {
                     try {
                     	 LOG.info("Worker PID: " + SystemInfoUtil.getPID());
-                      PrintJob.process(
-                          new String(BytesUtil.readBytesFromByteBuffer(job.getValue())));
+                    	 Class<?> jobClass = Class.forName(JOB_PACKAGE_PREFIX + JOB_NAME);
+                    	 
+                    	 LOG.info("Job class: " + jobClass.getName());
+                    	 
+                    	 Method method = jobClass.getMethod("process", String.class);
+                    	 
+                    	 method.invoke(jobClass, new String(BytesUtil.readBytesFromByteBuffer(job.getValue())));
+                    	 
+//                      PrintJob.process(
+//                          new String(BytesUtil.readBytesFromByteBuffer(job.getValue())));
                       succeededJobQueue.add(new PinLaterJobAckInfo(job.getKey()));
                     } catch (Exception e) {
                     	 LOG.info("Exception thrown while executing job: " + e.getMessage());

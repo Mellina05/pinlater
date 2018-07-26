@@ -7,9 +7,9 @@ mvn clean package
 
 tar -zxvf target/pinlater-0.1-SNAPSHOT-bin.tar.gz -C install
 
-cd install
+cp client.sh runWorker.sh install
 
-mkdir log
+cd install
 
 open -a Terminal "`pwd`"
 
